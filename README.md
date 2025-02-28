@@ -1,6 +1,7 @@
 # Replication package for "VAR Model with Sparse Group LASSO for Multi-population Mortality Forecasting"
 
 Tim Boonen and Yuhuai Chen
+The reproducibility package was assembled at 03/01/2025
 
 ## Overview & contents
 
@@ -37,7 +38,7 @@ renv::status() # check environment
 ```
 
 ## Data availability and provenance
-
+All data used in the paper 
 ### Human Mortality Database
 The data are located at `data`. These files are downloaded from the https://www.mortality.org/.
 
@@ -45,8 +46,14 @@ The data are located at `data`. These files are downloaded from the https://www.
 The data are located at `data`. These files are manually obtained from https://www.distancefromto.net/.
 
 ## Computer configuration and the expected runtime.
-
 | File Name  | Expected runtime |
 | ------------- | ------------- |
 | Content Cell  | Content Cell  |
 | Content Cell  | Content Cell  |
+
+## Special Case
+If the STAR model cannot reproduce intermediary data files from the raw data because of time constraints or insufficient CPU, the rest of the verification can still be carried out by adding a parameter `fitSTAR = FALSE` in the analysis function `func_table_[xx]_*()` in the analysis file `Table_[xx]_*.R`.
+
+
+
+ 
