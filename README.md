@@ -12,10 +12,8 @@ Each figure and table is generated separately by its corresponding script file
 
 The main contents of the repository are the following:
 
-- `plots/`: folder of generated plots as PDF files
-- `tables/`: folder of generated tables as txt files
 - `data/`: folder of raw data files and the functions for processing them
-- `out/`: folder of outpur
+- `out/`: folder of generated plots as PDF files and generated tables as csv files.
 - `function/`: folder of all nested functions
 - `Figure_[xx]_*.R`: R scripts to create the respective figures
 - `Table_[xx]_*.R`: R scripts to create the respective tables
@@ -27,7 +25,8 @@ All file paths are relative to the root of the replication package. Please set y
 
 The analysis files `Figure_[xx]_*.R` and `Table_[xx]_*.R` can be run individually, in any order.
 
-These analyses were run on R 4.3.1, and we explicitly use the following packages in the analysis files: `triptych` (0.1.2), `ggplot2` (3.4.3), `patchwork` (1.1.3), `dplyr` (1.1.3), `tidyr` (1.3.0), `purrr` (1.0.2), `grid` (base R), `lubridate` (1.9.2).
+These analyses were run on R 4.3.1, and we explicitly use the following packages in the analysis files:  
+abind(1.4-8), ggplot2(3.5.1), dplyr(1.1.4), psych(2.4.3), sparsevar(0.1.0), vars(1.6-1), MASS(7.3-60.0.1), forecast(8.23.0), vital(1.1.0), demography(2.0), tsibble(1.1.5), dplyr(1.1.4), CVXR(1.0-14).
 
 A comprehensive list of dependencies can be found in the `renv.lock` file. For a convenient setup in a (local) R session, we recommend using the `renv` package. The following steps are required once:
 ```
@@ -48,8 +47,8 @@ The data are located at `data`. These files are manually obtained from https://w
 ## Computer configuration and the expected runtime.
 | File Name  | Expected runtime |
 | ------------- | ------------- |
-| Content Cell  | Content Cell  |
-| Content Cell  | Content Cell  |
+| Table_01  | 11 min  |
+| Content Cell  | 12 min  |
 
 ## Special Case
 If the STAR model cannot reproduce intermediary data files from the raw data because of time constraints or insufficient CPU, the rest of the verification can still be carried out by adding a parameter `fitSTAR = FALSE` in the analysis function `func_table_[xx]_*()` in the analysis file `Table_[xx]_*.R`.
