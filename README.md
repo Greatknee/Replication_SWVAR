@@ -44,3 +44,9 @@ The data are located at `data`. These files are downloaded from the https://www.
 ### Geography Centroidd distance.
 The data are located at `data`. These files are manually obtained from https://www.distancefromto.net/.
 
+## Computer configuration and the expected runtime.
+
+| File Name  | Expected runtime |
+| ------------- | ------------- |
+| Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  |
