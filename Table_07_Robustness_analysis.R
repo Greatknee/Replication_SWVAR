@@ -25,22 +25,22 @@ source("functions/utils.R")
 source("functions/datapre.R")
 source("functions/model_benchmark.R")
 source("functions/model_SWVAR.R")
-source("functions/func_table_07_robust_g2_1.R")
 source("functions/func_table_07_robust_g1_5.R")
+source("functions/func_table_07_robust_g2_1.R")
 
 # Sample
 # Load data
 #group = '1'/'2','3','5',setting = '1'(5 year age group)/'2'(1 year age group,middle age), gender = 'male'/'female'
-dataf <- datapre_robust(group = 1, setting = '1', gender = 'female')
-
-# Run analysis
-resultf <- func_table_07_robust_g2_5(dataf)
-
-datam <- datapre_robust(group = 1, setting = '1', gender = 'male')
-resultm <- func_table_07_robust_g2_5(datam)
-
-resultf
-resultm
+# dataf <- datapre_robust(group = 1, setting = '1', gender = 'female')
+# 
+# # Run analysis
+# resultf <- func_table_07_robust_g1_5(dataf)
+# 
+# datam <- datapre_robust(group = 1, setting = '1', gender = 'male')
+# resultm <- func_table_07_robust_g1_5(datam)
+# 
+# resultf
+# resultm
 
 ######################################
 #The first half part for Setting 1 (5-year-age group)
@@ -55,7 +55,7 @@ for (i in 1:length(gen)) {
   for (j in 1:length(group)) {
     gj = group[j]
     data <- datapre_robust(group = gj, setting = '1', gender = gi) 
-    result_set1[((1:2)+(j-1)*2),((1:5)+(i-1)*5)] <- func_table_07_robust_g2_5(data)
+    result_set1[((1:2)+(j-1)*2),((1:5)+(i-1)*5)] <- func_table_07_robust_g1_5(data)
   }
 }
 result_set1
@@ -83,7 +83,7 @@ for (i in 1:length(gen)) {
   for (j in 1:length(group)) {
     gj = group[j]
     data <- datapre_robust(group = gj, setting = '1', gender = gi) 
-    result_set1[((1:2)+(j-1)*2),((1:5)+(i-1)*5)] <- func_table_07_robust1(data)
+    result_set2[((1:2)+(j-1)*2),((1:5)+(i-1)*5)] <- func_table_07_robust_g2_1(data,star = TRUE)
   }
 }
 result_set2

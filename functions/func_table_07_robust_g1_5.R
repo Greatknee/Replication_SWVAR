@@ -3,7 +3,7 @@ func_table_07_robust_g1_5 <- function(data){
   #general forecasting
   set.seed(123)
   #datapre
-  data <- datapre_robust(group = 1,setting = '1',gender = 'male')
+  #data <- datapre_robust(group = 1,setting = '1',gender = 'male')
   set = data$setting
   datagroup = data$group
   coulist = data$coulist

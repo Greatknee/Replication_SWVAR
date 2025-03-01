@@ -1,6 +1,9 @@
 func_table_0203_test <- function(data){
   
+  set.seed(123)
   #datapre
+  # data <- datapre_in(group = 1)
+  
   datagroup = data$group
   coulist = data$coulist
   datar = data$datar
@@ -39,6 +42,9 @@ func_table_0203_test <- function(data){
   #model3  VAR
   ddatamat_c = diff(datamat_c)
   VAR_4 = fitVAR(ddatamat_c,p=1)#0.0000119 360 1000
+  if (datagroup == 1) {
+    VAR_4 = fitVAR(ddatamat_c,p=1,lambda = c(2*VAR_4$lambda))#0.0000119 360 1000
+  }
   
   #our method
   #Model7
@@ -146,7 +152,6 @@ func_table_0203_test <- function(data){
     ws = do.call(cbind, result_list)
     ws = as.vector(t(ws))
     VAR_8 = fitVAR_weighted(dtsdata,dspamat,weight = ws,p=1)#加了alpha = 0.9
-    VAR_8 = fitVAR_weighted(dtsdata,dspamat,weight = ws,p=1,lambdas_list= 1.2*VAR_8$lambda)#加了alpha = 0.9
     looppred[,(1:glok)+(i-1)*glok] = VAR_8$pred
     loopresidual[,(1:glok)+(i-1)*glok] = VAR_8$residuals[-1,]
     loopedf[i] = sum(!VAR_8$coef ==0)
@@ -161,19 +166,20 @@ func_table_0203_test <- function(data){
   #datapre
   ghat = ddatamat_c[-1,]-loopresidual
   
-  VARJ = fitVAR_Jtest2(ddatamat_c[-1,],datap = ghat,p=1,lambdas_list=c(0,1))
-  sumj = customsummary2(VARJ,glok,glot,gloi)
+  VARJ = fitVAR_Jtest2(ddatamat_c[-1,],datap = ghat,p=1,lambdas_list=c(10))
+  sumj = customsummary2(VARJ,glok,glot,gloi,s = sigseq)
   sumj
-  VAR_12 = fitVAR(ddatamat_c[-1,],p=1,lambdas_list=c(0,1))
-  sumj0 = customsummary2(VAR_12,glok,glot,gloi)
+  VAR_12 =fitVAR_Jtest2(ddatamat_c[-1,],datap = ghat,p=1,lambdas_list=c(0))
+  sumj0 = customsummary2(VAR_12,glok,glot,gloi,s = sigseq)
   sumj0
-  chi = 2*(sumj$sl-sumj0$sl)
+  chi = 2*abs(sumj$sl-sumj0$sl)
   pvalue = 1-pchisq(2*abs(sumj$sl-sumj0$sl),1)
   chi
   pvalue
   
   
   #3.C-test
+  
   a1 = as.vector(ddatamat_c[-1,]-VAR_4$residuals[-1,])
   a2 = as.vector(ddatamat_c[-1,]-loopresidual)
   y = as.vector(VAR_4$residuals[-1,])

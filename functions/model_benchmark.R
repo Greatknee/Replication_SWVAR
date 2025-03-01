@@ -1,13 +1,13 @@
 #all benchmark models
 fitfdm <- function(coulist, fore = FALSE, year,age = 5,gen = 'Male',order = 1){
-  library(vital)
-  library(demography)
-  library(tsibble)
-  library(dplyr)
-  library(ggplot2)
+  
   tempk = 21
   tempi = length(coulist)
-
+  if (gen == 'Male') {
+    genum = 2
+  }else if (gen =='Female') {
+    genum = 1
+  }
   if (fore==FALSE) {
     filelist = c("Mx_5x1.txt", "Exposures_5x1.txt")
     ystr = year[1]
@@ -26,7 +26,7 @@ fitfdm <- function(coulist, fore = FALSE, year,age = 5,gen = 'Male',order = 1){
     }
     output = list()
     resfit = log(datar) - pred
-    edf = order*tempt*(tempi+1) + (1+order + order*tempi)*tempk
+    edf = order*tempt*(tempi+1) + (order + order*tempi)*tempk + tempi
     
     # l = matrix(0,tempi,1)
     # for (i in 1:tempi) {
@@ -61,7 +61,7 @@ fitfdm <- function(coulist, fore = FALSE, year,age = 5,gen = 'Male',order = 1){
       tempdemdata <- read.demogdata(Mltaddress[1], Mltaddress[2], type="mortality", label=coulist[i])
       tempdemdata$age = c(0,1,seq(5,110,5))
       tempdemdata_mod = extract.years(extract.ages(tempdemdata,0:99,FALSE),ystr:yetr)
-      tempfdm = demography::fdm(tempdemdata_mod,series = names(tempdemdata_mod$rate)[2],order = 1)
+      tempfdm = demography::fdm(tempdemdata_mod,series = names(tempdemdata_mod$rate)[genum],order = 1)
       datar[,,i] = tempdemdata_mod$rate$male
       pred[,,i] = tempfdm$fitted$y
     }
@@ -126,9 +126,9 @@ fitfdm <- function(coulist, fore = FALSE, year,age = 5,gen = 'Male',order = 1){
       output$residual = log(fore)-log(datate)
       sum = list()
       sum$rmsfe = sqrt(mean((log(fore)-log(datate))^2))
-      pop = sqrt(apply((log(fore)-log(datate))^2, c(2,3), mean))
+      pop = sqrt(apply((log(fore)-log(datate))^2, 3, mean))
       sum$pop = pop
-      sum$mae = mean(abs(log(fore)-log(datate)))
+      sum$mafe = mean(abs(log(fore)-log(datate)))
       output$summary = sum
     }
     else{
@@ -140,9 +140,9 @@ fitfdm <- function(coulist, fore = FALSE, year,age = 5,gen = 'Male',order = 1){
       
       tempdatag <- read_hmd_files(Mltaddress)
       df = as.data.frame(tempdatag |> 
-                           dplyr::filter(Year >= ystr & Year <= yetr& Sex == 'Male' & Age<100))
+                           dplyr::filter(Year >= ystr & Year <= yetr& Sex == gen & Age<100))
       dfte1 = as.data.frame(tempdatag |> 
-                              dplyr::filter(Year >= yste & Year <= yete& Sex == 'Male'& Age<100))
+                              dplyr::filter(Year >= yste & Year <= yete& Sex == gen & Age<100))
       datate[,,1] = matrix(dfte1$Mx_5x1,tempk,tempte)
       df$popc = coulist[1]
       
@@ -150,9 +150,9 @@ fitfdm <- function(coulist, fore = FALSE, year,age = 5,gen = 'Male',order = 1){
         Mltaddress = paste('data/',coulist[i],'/',filelist,sep = '')
         tempdatag <- read_hmd_files(Mltaddress)
         tempdata = as.data.frame(tempdatag |> 
-                                   dplyr::filter(Year >= ystr & Year <= yetr& Sex == 'Male' & Age<100))
+                                   dplyr::filter(Year >= ystr & Year <= yetr& Sex == gen & Age<100))
         dfte = as.data.frame(tempdatag |> 
-                               dplyr::filter(Year >= yste & Year <= yete& Sex == 'Male'& Age<100))
+                               dplyr::filter(Year >= yste & Year <= yete& Sex == gen & Age<100))
         datate[,,i] = matrix(dfte$Mx_5x1,tempk,tempte)
         tempdata$popc = coulist[i]
         df = dplyr::bind_rows(df,tempdata)
@@ -199,14 +199,9 @@ fitfdm <- function(coulist, fore = FALSE, year,age = 5,gen = 'Male',order = 1){
 
 
 fitfdm_bisex <- function(coulist, fore = FALSE, year,age = 5){
-  library(vital)
-  library(demography)
-  library(tsibble)
-  library(dplyr)
-  library(ggplot2)
   tempk = 21
   tempi = length(coulist)
-
+  
   if (fore==FALSE) {
     filelist = c("Mx_5x1.txt", "Exposures_5x1.txt")
     ystr = year[1]
@@ -376,8 +371,8 @@ fitfdm_bisex <- function(coulist, fore = FALSE, year,age = 5){
 }
 
 ####################STAR
-library(CVXR)
-fitstar_revv = function(datar, method, fore= FALSE, datate = NULL, lambda = 1){
+
+fitstar = function(datar, method, fore= FALSE, datate = NULL, lambda = 1 , kappa = 0){
   result = list()
   tempk = dim(datar)[1]
   tempt = dim(datar)[2]
@@ -529,7 +524,7 @@ fitstar_revv = function(datar, method, fore= FALSE, datate = NULL, lambda = 1){
     in_summary = list()
     l = matrix(0,tempi,1)
     
-    for (i in 1:gloi) {
+    for (i in 1:tempi) {
       tempres = res[,,i]
       s = var(t(datar[,,i]))
       templ = sapply(as.data.frame(tempres),wws,S=s)
@@ -540,12 +535,12 @@ fitstar_revv = function(datar, method, fore= FALSE, datate = NULL, lambda = 1){
     in_summary$edf = edf
     in_summary$sl = sum(l)
     in_summary$AIC = 2*sum(l) - 2*edf
-    in_summary$BIC = 2*sum(l) - log(glot)*edf
+    in_summary$BIC = 2*sum(l) - log(tempt)*edf
     result$summary = in_summary
   }
   else if (fore == TRUE& !is.null(datate)) {
     tempte = dim(datate)[2]
-    pred = array(0,c(tempk,tempte,tempi))
+    fore = array(0,c(tempk,tempte,tempi))
     coef_A = matrix(0,tempk*tempi,tempk*tempi)
     if (method == 'sep') {
       edf = tempi*(tempk+tempk-1+tempk-2)
@@ -554,6 +549,7 @@ fitstar_revv = function(datar, method, fore= FALSE, datate = NULL, lambda = 1){
       lambda_a = lambda
       lambda_b = lambda
       cvxl = seq(0,tempi)
+      mu = rep(0,tempi*tempk)
       for (II in 1:tempi) {
         X <- datar[,,II]
         Y <- X
@@ -585,16 +581,18 @@ fitstar_revv = function(datar, method, fore= FALSE, datate = NULL, lambda = 1){
         # 求解优化问题
         a = solve(problem)
         coef <- a$getValue(A)
-        m = a$getValue(m)
-        coef[coef<= 0.015] = 0
-        coef_A[((1:tempk)+(II-1)*glok),((1:tempk)+(II-1)*glok)] = coef
+        mm = a$getValue(m)
+        coef[coef<= kappa] = 0
+        coef_A[((1:tempk)+(II-1)*tempk),((1:tempk)+(II-1)*tempk)] = coef
         cvxl[II] = a$value
-        pred[,1,II] = coef%*% X[,tempt]+m
+        fore[,1,II] = coef%*% X[,tempt]+mm
         for (t in 1:(tempte-1)) {
-          pred[,(t+1),II] = coef%*% pred[,t,II]+m
+          fore[,(t+1),II] = coef%*% fore[,t,II]+mm
         }
+        mu[(1:tempk)+(II-1)*tempi] = mm
       }
       result$A = coef_A
+      result$mu = mu
     }
     else if (method == 'stack') {
       edf = tempi*(tempk^2)+tempk*tempi
@@ -674,7 +672,7 @@ fitstar_revv = function(datar, method, fore= FALSE, datate = NULL, lambda = 1){
       a = solve(problem)
       coef = a$getValue(BBmat)
       mm = a$getValue(m)
-      #coef[coef<= 0.003] = 0
+      coef[abs(coef)<= kappa] = 0
       predmat = array(0,c(tempk*tempi,(tempt-1)))
       for (t in 1:(tempt-1)){
         predmat[,t] = coef%*% Y[,t]+mm
@@ -695,12 +693,12 @@ fitstar_revv = function(datar, method, fore= FALSE, datate = NULL, lambda = 1){
       result$mu = mm
       result$pred = pred
     }
-    resfit = datar[,2:tempt,] - pred
+    #resfit = datar[,2:tempt,] - pred
     resf = datate - fore
     result$fore = fore
     result$residual = resf
-    result$mae = mean(abs(resfit))
-    result$rmse = sqrt(mean(resfit^2))
+    #result$mae = mean(abs(resfit))
+    #result$rmse = sqrt(mean(resfit^2))
     result$rmsfe = sqrt(mean(resf^2))
     result$mafe = mean(abs(resf))
     lrpop = sqrt(apply((resf)^2,3,mean))
@@ -712,7 +710,7 @@ fitstar_revv = function(datar, method, fore= FALSE, datate = NULL, lambda = 1){
   return(result)
 }
 
-fitstar_rev = function(datar, method, fore= FALSE, datate = NULL, lambda = 0.01){
+fitstar_rev = function(datar, method, fore= FALSE, datate = NULL, lambda = 0.01,kappa = 0){
   result = list()
   tempk = dim(datar)[1]
   tempt = dim(datar)[2]-1
@@ -866,7 +864,7 @@ fitstar_rev = function(datar, method, fore= FALSE, datate = NULL, lambda = 0.01)
     in_summary = list()
     l = matrix(0,tempi,1)
     
-    for (i in 1:gloi) {
+    for (i in 1:tempi) {
       tempres = res[,,i]
       s = var(t(datar[,,i]))
       templ = sapply(as.data.frame(tempres),wws,S=s)
@@ -877,7 +875,7 @@ fitstar_rev = function(datar, method, fore= FALSE, datate = NULL, lambda = 0.01)
     in_summary$edf = edf
     in_summary$sl = sum(l)
     in_summary$AIC = 2*sum(l) - 2*edf
-    in_summary$BIC = 2*sum(l) - log(glot)*edf
+    in_summary$BIC = 2*sum(l) - log(tempt)*edf
     result$summary = in_summary
   }
   else if (fore == TRUE& !is.null(datate)) {
@@ -891,15 +889,13 @@ fitstar_rev = function(datar, method, fore= FALSE, datate = NULL, lambda = 0.01)
       lambda_b = lambda
       cvxl = seq(0,tempi)
       pred_raw = datate
+      mu = rep(0,tempk*tempi)
       for (II in 1:tempi) {
         X <- ddatar[,,II]
         Y <- X
         # 定义P
-        mm = rep(0,glok)
-        Y = Y-matrix(mm,nrow = tempk, ncol = tempt)
-        m <- Variable(tempk)
         BBmat <- Variable(tempk,tempk)
-        
+        m <- Variable(tempk)
         #
         A = cbind(m,BBmat)
         Y_add = rbind(1,Y)
@@ -922,15 +918,15 @@ fitstar_rev = function(datar, method, fore= FALSE, datate = NULL, lambda = 0.01)
         problem <- Problem(objective,constraints = constraints)
         
         # 求解优化问题
-        a = solve(problem,num_iter = 10)
+        a = solve(problem)
         coef <- a$getValue(BBmat)
-        m <- a$getValue(m)
-        #coef[coef<= 0.01] = 0
-        coef_A[((1:tempk)+(II-1)*glok),((1:tempk)+(II-1)*glok)] = coef
+        mm <- a$getValue(m)
+        coef[coef<= kappa] = 0
+        coef_A[((1:tempk)+(II-1)*tempk),((1:tempk)+(II-1)*tempk)] = coef
         cvxl[II] = a$value
-        pred[,1,II] = coef%*% Y[,tempt]+m+mm
+        pred[,1,II] = coef%*% Y[,tempt]+mm
         for (t in 1:(tempte-1)) {
-          pred[,(t+1),II] = coef%*% (pred[,t,II]-mm) +m+ mm
+          pred[,(t+1),II] = coef%*% (pred[,t,II]-mm) +mm
         }
         #back to log mortality
         y0 = pred[,,II]
@@ -939,8 +935,10 @@ fitstar_rev = function(datar, method, fore= FALSE, datate = NULL, lambda = 0.01)
           y0[, i] <- datar[,tempt+1,II]
         }
         pred_raw[,,II] = t(apply(pred[,,II],1,cumsum))+y0
+        mu[(1:tempk)+(II-1)*tempi] = mm
       }
       result$A = coef_A
+      result$mu = mu
     }
     else if (method == 'stack') {
       edf = tempi*(tempk^2)+tempk*tempi
@@ -957,11 +955,10 @@ fitstar_rev = function(datar, method, fore= FALSE, datate = NULL, lambda = 0.01)
       
       # 将其转换为矩阵，合并 d1 和 d3 维度
       Y <- matrix(X_new, nrow = tempk*tempi, ncol = tempt)
-      mm = rep(0,gloi*glok)#rowMeans(Y)
       #Y = Y-matrix(mm,nrow = tempk*tempi, ncol = tempt)
-      m <- Variable(tempk*tempi)
       # 定义P
       BBmat = Variable(tempk*tempi,tempk*tempi)
+      m <- Variable(tempk*tempi)
       #加常数项
       A = cbind(m,BBmat)
       Y_add = rbind(1,Y)
@@ -1018,16 +1015,16 @@ fitstar_rev = function(datar, method, fore= FALSE, datate = NULL, lambda = 0.01)
       
       
       # 求解优化问题
-      a = solve(problem,num_iter = 10)
+      a = solve(problem)
       coef = a$getValue(BBmat)
-      m <- a$getValue(m)
-      #coef[coef<= 0.01] = 0
+      mm <- a$getValue(m)
+      coef[abs(coef)<= kappa] = 0
       cvxl = a$value
       predmat = array(0,c(tempk*tempi,tempte))
-      predmat[,1] = coef%*% Y[,tempt] +m
+      predmat[,1] = coef%*% Y[,tempt] +mm
       
       for (t in 1:(tempte-1)){
-        predmat[,(t+1)] = coef%*% (predmat[,t])+m
+        predmat[,(t+1)] = coef%*% (predmat[,t])+mm
       }
       pred = array(predmat,dim = c(tempk,tempi,tempte))
       pred = aperm(pred,c(1,3,2))
@@ -1038,14 +1035,15 @@ fitstar_rev = function(datar, method, fore= FALSE, datate = NULL, lambda = 0.01)
       }
       pred_raw = aperm(apply(pred,c(1,3),cumsum),c(2,1,3))+y0
       result$A = coef
-      result$mu = m
+      result$mu = mm
     }
     
     resf = datate - pred_raw
     result$pred = pred_raw
+    result$fore = pred_raw
     result$residual = resf
     result$rmsfe = sqrt(mean(resf^2))
-    result$mae = mean(abs(resf))
+    result$mafe = mean(abs(resf))
     lrpop = sqrt(apply((resf)^2,3,mean))
     result$lrpop = lrpop
     result$popsd = sd(lrpop)
@@ -1232,7 +1230,12 @@ cvVAR <- function(data, p, penalty = "ENET", opt = NULL) {
   #addition
   index = which(fit$lambda %in% fit$lambda.min)
   tLL <- fit$glmnet.fit$nulldev *  fit$glmnet.fit$dev.ratio[index]
-  k <- sum(A[[1]] != 0)
+  
+  if (fit$lambda.min == 0) {
+    k <- prod(dim(A[[1]]))
+  }else{
+    k <- sum(A[[1]] != 0)
+  }
   nn <- fit$glmnet.fit$nobs
   AIC <- tLL-2*k 
   BIC<-tLL-log(nn)*k
@@ -1487,7 +1490,7 @@ fitVAR_auto <- function(datatr,datate,sparse = TRUE){
 
 
 ##################################
-fitlilee <- function(datar,data_star_low_tr,datate){
+fitlilee <- function(datar,data_star_low_tr,datate,robust = FALSE){
   LeeCarter <- function(data, x = NULL, y = NULL,...){
     
     input <- c(as.list(environment()))
@@ -1601,7 +1604,7 @@ fitlilee <- function(datar,data_star_low_tr,datate){
     return(forec)
   }
   #with ar fit k
-  fore_lilee2 <- function(timestep ,dtrain=datatr,dtest = datate){
+  fore_lilee2 <- function(timestep,dtrain=datatr,dtest = datate,robust = FALSE){
     predk = matrix(0,nrow = gloi,ncol = timestep)
     fitvalue = matrix(0,gloi,2)
     r = matrix(0,gloi,1)
@@ -1613,34 +1616,56 @@ fitlilee <- function(datar,data_star_low_tr,datate){
     for (i in 1:gloi) {
       dt0 = dtrain[,,i][,ncol(dtrain[,,i])]
       tsd = ts(listk[i,])
-      fit <- ar(tsd,order.max =1,h=timestep)
-      fitvalue[i,1] = fit$x.mean
-      if (length(fit$ar) == 0) {
-        fitvalue[i,2] = 0
-      }else{
-        fitvalue[i,2] = fit$ar
+      #fit <- ar(tsd,order.max =1,h=timestep)
+      #fitvalue[i,1] = fit$x.mean
+      
+      if (robust & dim(dtrain)[3] >=10 ){
+        fit <- ar(tsd,order.max =1)
+        fitvalue[i,1] = fit$x.mean
+        fitsd = 0.001
+        if (dim(dtrain)[1]>=30) {
+          fitsd = 0.1
+        }
+        if (length(fit$ar) == 0) {
+          fitvalue[i,2] = 0
+        }else{
+          fitvalue[i,2] = fit$ar
+        }
+        
+      }else{  
+        fit <- ar(tsd,order.max =1)
+        fitvalue[i,1] = fit$x.mean
+        fitsd = 0
+        if (length(fit$ar) == 0) {
+          fitvalue[i,2] = 0
+        }else{
+          fitvalue[i,2] = fit$ar
+        }
+        predk[i,]=custompred(fitvalue[i,],t=timestep,tsd[length(tsd)])
+        
       }
-      predk[i,]=custompred(fitvalue[i,],t=timestep,tsd[length(tsd)])
-      r[i] = 1-(var(residuals(fit))/var(tsd))
+      
+      
+      #r[i] = 1-(var(residuals(fit))/var(tsd))
       a = matrix(rep(dt0,timestep),glok,timestep)
       gp = lB%*%t(plK-lK[length(lK)])
       ip = listb[i,]%*%t(predk[i,]-listk[i,ncol(listk)])
-      fore[,,i] = a+gp+ip
-      forematrix[,((1:glok)+((i-1)*glok))]= t(a+gp+ip)
+      fore[,,i] = a+gp+ip+rnorm(1,0,fitsd)
+      #forematrix[,((1:glok)+((i-1)*glok))]= t(a+gp+ip)
     }
     result$forecast = fore
-    result$forematrix = forematrix
+    #result$forematrix = forematrix
     result$k= predk
     result$coef = fitvalue
     result$K = plK
-    result$Rar = r
+    #result$Rar = r
     result$res = fore-dtest
     result$rmsfe = sqrt(mean((fore-dtest)^2))
     return(result)
   }
   f0 = list()
   f0$fit = out
-  f02 = fore_lilee2(timestep = glote,dtrain=datar, dtest = datate)
+  f02 = fore_lilee2(timestep = glote, dtrain=datar, dtest = datate, robust = robust)
   f0$fore = f02$forecast
   f0$res = f02$forecast-datate
   f0$RMSFE = f02$rmsfe
@@ -1653,4 +1678,45 @@ fitlilee <- function(datar,data_star_low_tr,datate){
   mafe = mean(abs(f02$forecast-datate))
   f0$mafe = mafe
   return(f0)
+}
+
+fitsvar_sep <- function(datar,datate,mu){
+  glok = dim(datar)[1]
+  gloi = dim(datar)[3]
+  l =matrix(0,gloi,1)
+  edf = 0
+  coefmat_s = matrix(0,glok*gloi,glok*gloi)
+  gg = as.matrix(datar[,,1])
+  for (i in 2:gloi) {
+    gg = rbind(gg,datar[,,i]) 
+  }
+  datamat_c = t(gg)
+  ggg = as.matrix(datate[,,1])
+  for (i in 2:gloi) {
+    ggg = rbind(ggg,datate[,,i]) 
+  }
+  datamat_te = t(ggg)
+  ddatamat_c = diff(datamat_c)
+  sigseq = matrix(0,glok,glok*gloi)
+  for (i in 1:gloi) {
+    sigseq[,((1:glok)+glok*(i-1))] = var(diff(t(datar[,,i])))
+  }
+  wws <- function(Y,S) {
+    k =t(Y) %*% ginv(S)%*%Y
+    return(k)
+  }
+  for (i in 1:gloi) {
+    data = t(datar[,,i])
+    ddata = diff(data)
+    ddatamat_te = diff(datamat_te)
+    VAR6i = fitVAR(ddata,p=1)
+    s = sigseq[,((1:glok)+(i-1)*glok)]
+    tempdfy = VAR6i$residuals[-1,]
+    templ = sapply(as.data.frame(t(tempdfy)),wws,S=s)
+    l[i] =  - 1/2*sum(templ)
+    edf[i] =  sum(!VAR6i$coef ==0)
+    coefmat_s[((1:glok)+(i-1)*glok),((1:glok)+(i-1)*glok)]  = VAR6i$A[[1]]
+  }
+  f5=forecast_our2_nod(coefmat_s,mean = mu,ddatamat_c[nrow(ddatamat_c),],datamat_c[nrow(datamat_c),],datamat_te)
+  return(f5)
 }

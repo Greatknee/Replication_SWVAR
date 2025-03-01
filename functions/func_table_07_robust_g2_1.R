@@ -1,4 +1,3 @@
-#f0 = fitlilee(datatr1,data_star_low_tr1,datate1,robust = TRUE)
 
 
 func_table_07_robust_g2_1 <- function(data, star = FALSE){

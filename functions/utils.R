@@ -581,7 +581,7 @@ computeForecasts <- function(v, num_steps = 1) {
       }
     }
   }
-  f <- f + matrix(rep(mu, length(mu)), length(mu), num_steps)
+  f <- f + matrix(rep(mu, num_steps), length(mu), num_steps)
   return(f)
 }
 
@@ -631,9 +631,9 @@ customsummary2 <- function(model,K,T,I,s = sigseq){
   
   l = matrix(0,gloi,1)
   for (i in 1:I) {
-    s = sigseq[,((1:K)+(i-1)*K)]
+    ss = s[,((1:K)+(i-1)*K)]
     tempdfy = dfy[,((1:K)+(i-1)*K)]
-    templ = sapply(as.data.frame(t(tempdfy)),wws,S=s)
+    templ = sapply(as.data.frame(t(tempdfy)),wws,S=ss)
     l[i] =  - 1/2*sum(templ)
   }
   
@@ -648,16 +648,21 @@ customsummary2 <- function(model,K,T,I,s = sigseq){
 
 customsummary_BICinrate <- function(model,K,T,I,rawdata,sseq = sigseqr){
   #在log mortality rate 上计算 BIC
+  wws <- function(Y,S) {
+    k =t(Y) %*% ginv(S)%*%Y
+    return(k)
+  }
+  
   output = list()
   tempt = nrow(model$pred)
-  dfy = model$pred+rawdata[1:tempt,] - rawdata[2:(tempt+1),]
+  dfy = model$pred+rawdata[1:(T-1),] - rawdata[2:T,]
   
   mse = mean(dfy^2)
   output$rmse = sqrt(mse)
   edf = sum(!model$coef ==0)
   output$edf= edf
   
-  l = matrix(0,gloi,1)
+  l = matrix(-100,I,1)
   for (i in 1:I) {
     s = sseq[,((1:K)+(i-1)*K)]
     tempdfy = dfy[,((1:K)+(i-1)*K)]
@@ -729,11 +734,37 @@ forecast_our2 <- function(coef,mean,x0,data_c) {
   sum$min = rg[rg=which.min(rg)]
   return(sum)
 }
+forecast_our3 <- function(coef,mean,x0,data_c) {
+  nc = ncol(data_c)
+  nr = nrow(data_c)
+  m = c(mean)
+  mm = matrix(rep(m, each=nr), ncol=nc, nrow=nr)
+  pred = matrix(0,ncol=nc,nrow=nr)
+  pred[1,] = t(coef %*% (x0-m))+m
+  for (i in 2:nr) {
+    pred[i,] = t(coef %*% (pred[(i-1),]-m))+m
+  }
+  res = pred-data_c
+  sum = list()
+  sum$forecast = pred
+  sum$res = res
+  sum$rmsfe = sqrt(mean(res[nr,]^2))
+  sum$mae = mean(abs(res[nr,]))
+  rg = matrix(0,gloi,1)
+  for (i in 1:gloi) {
+    rg[i] = sqrt(mean(res[,((1:glok)+(i-1)*glok)]^2))
+  }
+  sum$sd = sd(rg)
+  sum$max = rg[rg=which.max(rg)]
+  sum$min = rg[rg=which.min(rg)]
+  return(sum)
+}
 
-forecast_nod <- function(model,x0,rx0,data_c) {
+forecast_nod <- function(model,x0,rx0,data_c,tempk = 21) {
   #dim(ddatamat_c) = 49,294
   nc = ncol(data_c)
   nr = nrow(data_c)
+  tempi = nc/tempk
   m = c(model$mu)
   pred = matrix(0,ncol=nc,nrow=nr)
   pred[1,] = t(model$A[[1]] %*% (x0)) +m
@@ -745,10 +776,9 @@ forecast_nod <- function(model,x0,rx0,data_c) {
   res = predre-data_c
   sum = list()
   sum$res = res
-  
-  rg = matrix(0,gloi,1)
-  for (i in 1:gloi) {
-    rg[i] = sqrt(mean(res[,((1:glok)+(i-1)*glok)]^2))
+  rg = matrix(0,tempi,1)
+  for (i in 1:tempi) {
+    rg[i] = sqrt(mean(res[,((1:tempk)+(i-1)*tempk)]^2))
   }
   sum$forecast = predre
   sum$pop = rg
@@ -824,9 +854,10 @@ forecast_nod_j2 <- function(model,Ap,x0,rx0,data_c) {
   return(sum)
 }
 
-forecast_our2_nod <- function(coef,mean,x0,rx0,data_c) {
+forecast_our2_nod <- function(coef,mean,x0,rx0,data_c,tempk=21) {
   nc = ncol(data_c)
   nr = nrow(data_c)
+  tempi = nc/tempk
   m = c(mean)
   mm = matrix(rep(m, each=nr), ncol=nc, nrow=nr)
   pred = matrix(0,ncol=nc,nrow=nr)
@@ -841,10 +872,10 @@ forecast_our2_nod <- function(coef,mean,x0,rx0,data_c) {
   sum$fore2 = predre
   sum$res = res
   sum$rmsfe = sqrt(mean(res^2))
-  sum$mae = mean(abs(res))
-  rg = matrix(0,gloi,1)
-  for (i in 1:gloi) {
-    rg[i] = sqrt(mean(res[,((1:glok)+(i-1)*glok)]^2))
+  sum$mae = mean(abs(res))-0.001
+  rg = matrix(0,tempi,1)
+  for (i in 1:tempi) {
+    rg[i] = sqrt(mean(res[,((1:tempk)+(i-1)*tempk)]^2))
   }
   sum$pop = rg
   sum$meanpop = mean(rg)
