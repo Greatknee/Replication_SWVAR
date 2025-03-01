@@ -1,24 +1,46 @@
 # Load necessary libraries
 library(dplyr)
-library(ggplot2)
-
+library(psych)
+library(sparsevar)
+library(vars)
+library(MASS)
+library(forecast)
+library(vital)
+library(demography)
+library(tsibble)
+library(dplyr)
+library(CVXR)
 #Set the directory
 setwd("C://Users//greatknee//Desktop//Mortality//Reproducibility//Replication_SWVAR")
-
+#Remove existing variables
+rm()
 # Source functions
 source("functions/utils.R")
 source("functions/datapre.R")
 source("functions/model_benchmark.R")
 source("functions/model_SWVAR.R")
 source("functions/func_table_01_insample.R")
+# # Sample
+# # Load data
+# data <- datapre_in(group = 5)
+#
+# # Run analysis
+# result <- func_table_01_insample(data)
+# #write.csv(result, "output/result_table_01_temp.csv")
+# result
 
-# Load data
-data <- datapre_in(group = 5)
-
-# Run analysis
-result <- func_table_01_insample(data)
-
-result
-
+# Formal
+start_time <- Sys.time()
+result_all = matrix(0,5*5,8)
+rownames(result_all) = rep(c('RMSE','edf','logL','AIC','BIC'),5)
+colnames(result_all) = c('Li-Lee','FDM','STAR1','STAR2','VAR','SVAR1','SVAR2','SWVAR')
+for (i in 1:5) {
+  data <- datapre_in(group = i)
+  result_all[(1:5)+(i-1)*5,] <- func_table_01_insample(data)
+}
+result_all
 # Save output
-#write.csv(result, "output/result.csv")
+write.csv(result_all, "output/result_table_01.csv")
+end_time <- Sys.time()
+print(end_time - start_time)
+#Time difference of 10.87298 mins
