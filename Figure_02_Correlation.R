@@ -28,4 +28,14 @@ data2 <- datapre_in(group = 2)
 
 # Run analysis
 g1 = func_figure_02_corr(data1)
+g2 = func_figure_02_corr(data2)
+
 g1+g2
+
+#save
+pdf('output/result_figure_021.pdf', width=8, height=6)
+print(g1)
+dev.off()
+pdf('output/result_figure_022.pdf', width=8, height=6)
+print(g2)
+dev.off()

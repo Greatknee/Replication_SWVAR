@@ -8,7 +8,7 @@
 #################
 
 func_figure_03_prefit <- function(data){
-
+  set.seed(123)
   datagroup = data$group
   coulist = data$coulist
   datar = data$datatr
@@ -65,18 +65,20 @@ func_figure_03_prefit <- function(data){
   #FDM
   fdm = fitfdm(coulist = coulist, fore = TRUE, year = c(data$ystr,data$yetr,data$yste,data$yete),age = 5)
   #STAR stack first,model1,2
-  VAR_1 = fitstar_rev(datar = datar,'stack',fore = TRUE,datate = datate)
+  kkapa_stack = c(0,0,1,0,0.09)
+  VAR_1 = fitstar_rev(datar = datar,'stack',fore = TRUE,datate = datate,lambda = 0.5,kappa = kkapa_stack[datagroup])
   ##########################################################################
   #fit model1
   #model34 AR+Lasso
   VAR_4 = fitVAR(ddatamat_c,p=1)#0.0000119 360 1000
   f4=forecast_nod(VAR_4,ddatamat_c[nrow(ddatamat_c),],datamat_c[nrow(datamat_c),],datamat_te)
   #SWVAR
-  f6 = fitswvar(datar = datar, group = datagroup,datate = datate)
+  f6 = fitswvar_lack_global(datar = datar, group = datagroup,datate = datate, coulist= coulist)
   
   return(list(f0 = f0,
            fdm = fdm,
            VAR_1 = VAR_1,
            f4 = f4,
-           f6 = f6))
+           f6 = f6,
+           coulist = data$coulist))
 }

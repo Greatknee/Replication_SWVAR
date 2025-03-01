@@ -4,10 +4,18 @@ func_figure_04_draw <- function(fit){
   VAR_1 = fit$VAR_1
   f4 = fit$f4
   f6 = fit$f6
-  
+  coulist = fit$coulist
+  rms <- function(x){
+    result = sqrt(mean(x^2))
+  }
   tstep = dim(f0$fore)[2]
+  glok = dim(f0$fore)[1]
   
-  popind =  c(1:5,14)
+  if (length(coulist) == 14) {
+    popind =  c(1:5,14)
+  }else{
+    popind =  c(1:6)
+  }
   tempgloi = length(popind)
   p2data1 = matrix(0,tstep,tempgloi)
   p2data3 = p2data1

@@ -9,9 +9,12 @@
 
 #################
 func_figure_05_logm <- function(data){
+  #data <- datapre_out(group = 1) 
+  
   datagroup = data$group
   coulist = data$coulist
   datar = data$datatr
+  datate = data$datate
   data_star_low = data$data_star_low
   glot = data$glot
   glok = data$glok
@@ -22,11 +25,18 @@ func_figure_05_logm <- function(data){
   }
   dim(gg)
   datamat_c = t(gg)
+  
+  #prepare forecast matrix
+  ggg = as.matrix(datate[,,1])
+  for (i in 2:gloi) {
+    ggg = rbind(ggg,datate[,,i]) 
+  }
+  dim(ggg)
+  datamat_te = t(ggg)
   cname = paste(rep(coulist,rep_len(glok,gloi)),seq(1,glok,1),sep = '')
   colnames(datamat_c) <- cname 
   sig_c = var(diff(datamat_c))
-  gloKc = gloi*glok
-  gloTc = glot
+  
   wws <- function(Y,S) {
     k =t(Y) %*% ginv(S)%*%Y
     return(k)
@@ -45,9 +55,12 @@ func_figure_05_logm <- function(data){
     sigseqr[,((1:glok)+glok*(i-1))] = var(t(datar[,,i]))
   }
   
+  ddatamat_c = diff(datamat_c)
+  ddatamat_te = diff(datamat_te)
+  
   ##########################################################################
   #Li-Lee
-  f0 = fitlilee(datar,data_star_low_tr,datate)
+  f0 = fitlilee(datar,data_star_low,datate)
   
   #SVAR
   ddatamat_c = diff(datamat_c)
@@ -60,7 +73,7 @@ func_figure_05_logm <- function(data){
   # add age weighted model
   # weight age only need to multiply before the X
   #datapre
-  f6 = fitswvar(datar = datar, group = datagroup,datate = datate)
+  f6 = fitswvar_lack_global(datar = datar, group = datagroup,datate = datate,coulist =  coulist)
   
   
   ###################################################

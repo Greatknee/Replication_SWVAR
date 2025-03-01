@@ -293,6 +293,13 @@ func_figure_01_coef <- function(data){
     theme(axis.text.x=element_text(size=4, angle=0, vjust=0.3),
           axis.text.y=element_text(size=4),
           plot.title=element_blank())
-  g1+g2+g3+g4
-
+  
+  #save output
+  pdf('output/result_figure_011.pdf', width=12, height=6)
+  print(g1+g2)  
+  dev.off()
+  pdf('output/result_figure_012.pdf', width=12, height=6)
+  print(g3+g4)  
+  dev.off()
+  return(list(g1 = g1, g2=g2, g3 = g3, g4 = g4))
 }

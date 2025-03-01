@@ -9,7 +9,7 @@
 
 #################
 func_figure_02_corr <- function(data){
-    
+  set.seed(123)
   datagroup = data$group
   coulist = data$coulist
   datar = data$datar
@@ -184,7 +184,6 @@ func_figure_02_corr <- function(data){
   
   ###################################################
   #res cor
-  set.seed(100)
   
   # 
   pal <- colorRampPalette(c(rgb(0.96,0,1), rgb(0.96,0.96,1),rgb(0,0,0.9)), space = "rgb")
@@ -273,7 +272,7 @@ func_figure_02_corr <- function(data){
   }
   fk = 21
   fi = 4
-  xrev = apply(x, 2, rev)
+  xrev = apply(xp, 2, rev)
   df1 = data.frame(value = as.vector(xp))
   aglist = seq(0,100,5)#as.character(seq(1,fk,1))
   aglistinv = seq(100,0,-5)#as.character(seq(fk,1,-1))
@@ -297,6 +296,7 @@ func_figure_02_corr <- function(data){
     theme(axis.text.x=element_text(size=4, angle=0, vjust=0.3),
           axis.text.y=element_text(size=4),
           plot.title=element_blank())
+
   return(g1)
 }
   

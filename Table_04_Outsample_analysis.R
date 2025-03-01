@@ -32,7 +32,7 @@ start_time <- Sys.time()
 group = c(1,2,3,5)
 result_all = matrix(0,5*length(group),8)
 rownames(result_all) = rep(c('RMSFE','sigma','max','min','MAFE'),length(group))
-colnames(result_all) = c('Li-Lee','FDM','STAR1','STAR2','VAR','SVAR1','SVAR2','SWVAR')
+colnames(result_all) = c('Li-Lee','Co-FDM','STAR1','STAR2','VAR','SVAR1','SVAR2','SWVAR')
 for (i in 1:length(group)) {
   data <- datapre_out(group = group[i])
   result_all[(1:5)+(i-1)*5,] <- func_table_04_outsample(data)

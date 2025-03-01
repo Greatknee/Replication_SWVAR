@@ -33,7 +33,7 @@ source("functions/func_table_01_insample.R")
 start_time <- Sys.time()
 result_all = matrix(0,5*5,8)
 rownames(result_all) = rep(c('RMSE','edf','logL','AIC','BIC'),5)
-colnames(result_all) = c('Li-Lee','FDM','STAR1','STAR2','VAR','SVAR1','SVAR2','SWVAR')
+colnames(result_all) = c('Li-Lee','Co-FDM','STAR1','STAR2','VAR','SVAR1','SVAR2','SWVAR')
 for (i in 1:5) {
   data <- datapre_in(group = i)
   result_all[(1:5)+(i-1)*5,] <- func_table_01_insample(data)

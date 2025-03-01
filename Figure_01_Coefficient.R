@@ -23,6 +23,5 @@ source("functions/func_figure_01_coef.R")
 data <- datapre_in(group = 1) 
 
 # Run analysis
-func_figure_01_coef(data)
-
-"functions/func_table_04_outsample.R"
+out = func_figure_01_coef(data)
+out$g1+out$g2+out$g3+out$g4

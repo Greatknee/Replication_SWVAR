@@ -5,7 +5,9 @@ func_figure_03_draw <- function(fit){
   VAR_1 = fit$VAR_1
   f4 = fit$f4
   f6 = fit$f6
-  
+  rms <- function(x){
+    result = sqrt(mean(x^2))
+  }
   tstep = dim(f0$fore)[2]
   Step = rep(1:tstep,5)
   

@@ -7,6 +7,7 @@
 #################
 func_table_04_outsample <- function(data){
   set.seed(123)
+  
   datagroup = data$group
   coulist = data$coulist
   datar = data$datatr

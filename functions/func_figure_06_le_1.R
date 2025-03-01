@@ -201,7 +201,7 @@ func_figure_06_le_1 <- function(){
   
   ############################################################
   # SVAR
-  f6 = fitswvar_lack_global(datar = datar2[,1:(glot+10),], group = datagroup,datate = datate,rawdata = data)
+  f6 = fitswvar_lack_global(datar = datar2[,1:(glot+10),], group = datagroup,datate = datate, coulist = coulist)
   
   pureforecast <- function(model,x0,step) {
     #dim(ddatamat_c) = 49,294

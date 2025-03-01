@@ -4,7 +4,7 @@ func_table_07_robust_g2_1 <- function(data, star = FALSE){
   #general forecasting
   set.seed(123)
   #datapre
-  #data <- datapre_robust(group = 1,setting = '2',gender = 'female')
+  #data <- datapre_robust(group = 2, setting = '2',gender = 'female')
   
   set = data$setting
   datagroup = data$group

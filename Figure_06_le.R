@@ -35,3 +35,9 @@ f2 = func_figure_06_le_2()
 
 f1 + f2
 
+pdf('output/result_figure_061.pdf', width=15, height=6)
+print(f1)
+dev.off()
+pdf('output/result_figure_062.pdf', width=15, height=6)
+print(f2)
+dev.off()

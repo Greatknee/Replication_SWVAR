@@ -46,10 +46,11 @@ source("functions/func_table_07_robust_g2_1.R")
 #The first half part for Setting 1 (5-year-age group)
 #Forloop
 start_time1 <- Sys.time()
-
 result_set1 = matrix(0,4*2,2*5)
 gen = c('female','male')
 group = c(1,2,3,5)
+rownames(result_set2) = rep(c('RMSFE','MAFE'),length(group))
+colnames(result_set2) = c('Li-Lee','CoFDM','STAR','SVAR','SWVAR')
 for (i in 1:length(gen)) {
   gi = gen[i]
   for (j in 1:length(group)) {
@@ -66,6 +67,8 @@ write.csv(result_set1, "output/result_07_set1.csv")
 end_time1 <- Sys.time()
 print(end_time1 - start_time1)
 
+#Time difference of 15.19703 mins
+
 ######################################
 ######################################
 #The second half part for Setting 2 (1-year-age group).
@@ -73,16 +76,19 @@ print(end_time1 - start_time1)
 #You can change the parameter in main function "func_table_07_robust_g2_1(~,fitstar= TRUE)" to decide whether carry out it, 
 #the default in the reproduction package is not run it.
 
+
 #Forloop
 start_time2 <- Sys.time()
 result_set2 = matrix(0,4*2,2*5)
 gen = c('female','male')
 group = c(1,2,3,5)
+rownames(result_set2) = rep(c('RMSFE','MAFE'),length(group))
+colnames(result_set2) = c('Li-Lee','CoFDM','STAR','SVAR','SWVAR')
 for (i in 1:length(gen)) {
   gi = gen[i]
   for (j in 1:length(group)) {
     gj = group[j]
-    data <- datapre_robust(group = gj, setting = '1', gender = gi) 
+    data <- datapre_robust(group = gj, setting = '2', gender = gi) 
     result_set2[((1:2)+(j-1)*2),((1:5)+(i-1)*5)] <- func_table_07_robust_g2_1(data,star = TRUE)
   }
 }
