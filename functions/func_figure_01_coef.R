@@ -1,13 +1,3 @@
-# fit the model
-#general forecasting
-#easy mode
-#prediction
-#14 low mortality pop
-
-
-
-
-#################
 func_figure_01_coef <- function(data){
   datagroup = data$group
   coulist = data$coulist
@@ -85,7 +75,7 @@ func_figure_01_coef <- function(data){
     colnames(dspamat) =  paste('aug',seq(1,dim(spamat)[2]),sep = '')
     
     sig = sigseqr[,((1:glok)+(i-1)*glok)]
-  
+    
     #penalized term 
     tempws = ws_c[i,][ws_c[i,]!=0]
     gridsc = matrix(0,length(aseq),length(sseq))

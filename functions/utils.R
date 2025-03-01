@@ -623,13 +623,16 @@ customsummary <- function(model,K,T,s = sig_c){
 customsummary2 <- function(model,K,T,I,s = sigseq){
   output = list()
   dfy = model$residuals[-1,]
-  
+  wws <- function(Y,S) {
+    k =t(Y) %*% ginv(S)%*%Y
+    return(k)
+  }
   mse = mean(dfy^2)
   output$rmse = sqrt(mse)
   edf = sum(!model$coef ==0)
   output$edf= edf
   
-  l = matrix(0,gloi,1)
+  l = matrix(0,I,1)
   for (i in 1:I) {
     ss = s[,((1:K)+(i-1)*K)]
     tempdfy = dfy[,((1:K)+(i-1)*K)]

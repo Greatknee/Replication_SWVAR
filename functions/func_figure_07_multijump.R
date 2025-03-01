@@ -13,9 +13,13 @@
 # library(hierarchyUtils)
 # library(demCore)
 
+LEMSE(f0$fore,e0_te) 
+
+
+
+
 ## 1950-2018
 func_figure_07_multijump <- function(data, star = FALSE){
-  #data <- datapre_in(group = 5) 
   datagroup = data$group
   coulist <<- data$coulist
   datar = data$datar
@@ -122,7 +126,11 @@ func_figure_07_multijump <- function(data, star = FALSE){
       kkapa_stack = c(0,0,1,0,0.09)
       VAR_1 = fitstar_rev(datar = datar,'stack',fore = TRUE,datate = datate,lambda = 0.5,kappa = kkapa_stack[datagroup])
       print('star finish')
-    }else
+    }else{
+      VAR_1 = list()
+      VAR_1$pred = 0
+      VAR_1$rmsfe = 0
+    }
 
     ##########################################################################
     ##########################################################################
@@ -142,13 +150,12 @@ func_figure_07_multijump <- function(data, star = FALSE){
     #RMSFE for LE
     
     e0_te = le_ez(exp(datate))
-    LE1 = LEMSE(f0$forecast,e0_te) 
-    LE2 = LEMSE(fdm,e0_te)
+    LE1 = LEMSE(f0$fore,e0_te) 
+    LE2 = LEMSE(log(fdm$fore),e0_te)
     LE3 = LEMSE(VAR_1$pred,e0_te)
-    LE4 = LEMSE(f4$forecast,e0_te)
-    LE5 = LEMSE(f6$forecast,e0_te)
-    
-    
+    LE4 = LEMSE(aperm(array(f4$forecast,dim = c(nrow(f4$forecast),21,ncol(f4$forecast)/21)),perm = c(2,1,3)),e0_te)
+    LE5 = LEMSE(aperm(array(f6$fore2,dim = c(nrow(f4$forecast),21,ncol(f4$forecast)/21)),perm = c(2,1,3)),e0_te)
+
     recordmall[TT,] = c(f0$RMSFE,fdm$summary$rmsfe,VAR_1$rmsfe,f4$rmsfe,f6$rmsfe)
     recordleall[TT,] = c(LE1$all,LE2$all,LE3$all,LE4$all,LE5$all)
     #recordlepop[[TT]] = cbind(LE0$pop,LE1$pop,LE2$pop ,LE3$pop,LE4$pop)
@@ -162,32 +169,56 @@ func_figure_07_multijump <- function(data, star = FALSE){
   recordmallgg = recordmall
   recordleallgg = recordleall
   
+  if (star) {
+    format_jpo = data.frame(value = c(as.vector(recordmallgg)))
+    format_jpo$time = rep(seq(2000,2009),5)
+    format_jpo$model = rep(rep(c('Li_Lee','CoFDM','STAR','SVAR','SWVAR'),each = 10),1)
+    pfore1 <- ggplot(format_jpo, aes(
+      x = time, 
+      y = value,
+    ))
+    p11 = pfore1 +geom_line(aes(group = model,color = model)) +
+      ggtitle(paste('Group',datagroup,sep = ''))+xlab(expression(atop("Jump-off year ("*italic(T[jy])*")")))+ylab(expression(logm))+scale_x_continuous(breaks=seq(2000,2009,3))+
+      theme(plot.title = element_text(vjust =0.5,hjust=0.5, size=10, face="bold.italic"),axis.title.x = element_text(size = 10),axis.title.y = element_text(size = 10),legend.position = 'none')
+    
+    #recordleallgg[,5] = 1.2*recordleallgg[,5]
+    
+    format_jpo = data.frame(value = c(as.vector(recordleallgg[,c(1,2,3,4,5)])))
+    format_jpo$time = rep(seq(2000,2009),5)
+    format_jpo$model = rep(rep(c('Li_Lee','CoFDM','STAR','SVAR','SWVAR'),each = 10),1)
+    pfore1 <- ggplot(format_jpo, aes(
+      x = time, 
+      y = value,
+    ))
+    p12 = pfore1 +geom_line(aes(group = model,color = model)) +
+      ggtitle(paste('Group',datagroup,sep = ''))+xlab(expression(atop("Jump-off year ("*italic(T[jy])*")")))+ylab('LE')+scale_x_continuous(breaks=seq(2000,2009,3))+
+      theme(plot.title = element_text(vjust =0.5,hjust=0.5, size=10, face="bold.italic"),axis.title.x = element_text(size = 10),axis.title.y = element_text(size = 10),legend.key.size = unit(12, "pt"))
+    
+  }else{
+    format_jpo = data.frame(value = c(as.vector(recordmallgg[,c(1,2,4,5)])))
+    format_jpo$time = rep(seq(2000,2009),4)
+    format_jpo$model = rep(rep(c('Li_Lee','CoFDM','SVAR','SWVAR'),each = 10),1)
+    pfore1 <- ggplot(format_jpo, aes(
+      x = time, 
+      y = value,
+    ))
+    p11 = pfore1 +geom_line(aes(group = model,color = model)) +
+      ggtitle(paste('Group',datagroup,sep = ''))+xlab(expression(atop("Jump-off year ("*italic(T[jy])*")")))+ylab(expression(logm))+scale_x_continuous(breaks=seq(2000,2009,3))+
+      theme(plot.title = element_text(vjust =0.5,hjust=0.5, size=10, face="bold.italic"),axis.title.x = element_text(size = 10),axis.title.y = element_text(size = 10),legend.position = 'none')
+    
+
+    format_jpo = data.frame(value = c(as.vector(recordleallgg[,c(1,2,4,5)])))
+    format_jpo$time = rep(seq(2000,2009),4)
+    format_jpo$model = rep(rep(c('Li_Lee','CoFDM','SVAR','SWVAR'),each = 10),1)
+    pfore1 <- ggplot(format_jpo, aes(
+      x = time, 
+      y = value,
+    ))
+    p12 = pfore1 +geom_line(aes(group = model,color = model)) +
+      ggtitle(paste('Group',datagroup,sep = ''))+xlab(expression(atop("Jump-off year ("*italic(T[jy])*")")))+ylab('LE')+scale_x_continuous(breaks=seq(2000,2009,3))+
+      theme(plot.title = element_text(vjust =0.5,hjust=0.5, size=10, face="bold.italic"),axis.title.x = element_text(size = 10),axis.title.y = element_text(size = 10),legend.key.size = unit(12, "pt"))
+    
+  }
   
-  format_jpo = data.frame(value = c(as.vector(recordmallgg[,c(1,2,4,5)])))
-  format_jpo$time = rep(seq(2000,2009),4)
-  format_jpo$model = rep(rep(c('Li_Lee','CoFDM','SVAR','SWVAR'),each = 10),1)
-  pfore1 <- ggplot(format_jpo, aes(
-    x = time, 
-    y = value,
-  ))
-  p11 = pfore1 +geom_line(aes(group = model,color = model)) +
-    ggtitle('Group1')+xlab(expression(atop("Jump-off year ("*italic(T[jy])*")")))+ylab(expression(logm))+scale_x_continuous(breaks=seq(2000,2009,3))+
-    theme(plot.title = element_text(vjust =0.5,hjust=0.5, size=10, face="bold.italic"),axis.title.x = element_text(size = 10),axis.title.y = element_text(size = 10),legend.position = 'none')
-  
-  recordleallg1[,4] = 1.2*recordleallg1[,4]
-  
-  format_jpo = data.frame(value = c(as.vector(recordleallgg[,c(1,2,4,5)])))
-  format_jpo$time = rep(seq(2000,2009),4)
-  format_jpo$model = rep(rep(c('Li_Lee','CoFDM','SVAR','SWVAR'),each = 10),1)
-  pfore1 <- ggplot(format_jpo, aes(
-    x = time, 
-    y = value,
-  ))
-  p12 = pfore1 +geom_line(aes(group = model,color = model)) +
-    ggtitle('Group1')+xlab(expression(atop("Jump-off year ("*italic(T[jy])*")")))+ylab('LE')+scale_x_continuous(breaks=seq(2000,2009,3))+
-    theme(plot.title = element_text(vjust =0.5,hjust=0.5, size=10, face="bold.italic"),axis.title.x = element_text(size = 10),axis.title.y = element_text(size = 10),legend.key.size = unit(12, "pt"))
-  
-  
-  p11+p12
   return(list(p1 = p11, p2 = p12))
 }

@@ -2,10 +2,8 @@
 
 func_table_07_robust_g2_1 <- function(data, star = FALSE){
   #general forecasting
-  set.seed(123)
   #datapre
-  #data <- datapre_robust(group = 2, setting = '2',gender = 'female')
-  
+  set.seed(123)
   set = data$setting
   datagroup = data$group
   coulist = data$coulist
@@ -79,7 +77,8 @@ func_table_07_robust_g2_1 <- function(data, star = FALSE){
   fdm$summary$mae
   #STAR stack first,model1,2
   if (star) {
-    VAR_1 = fitstar(datar = datatr1,'stack',fore = TRUE,datate = datate1,lambda = 1)
+    kappalist = c(0.01,0,0,0,0)
+    VAR_1 = fitstar(datar = datatr1,'stack',fore = TRUE,datate = datate1,lambda = 1,kappa = kappalist[data$group])
   }else{
     VAR_1 = list()
     VAR_1$rmsfe = 0
@@ -113,9 +112,10 @@ func_table_07_robust_g2_1 <- function(data, star = FALSE){
     }
   }
   weight = read_csv_if_exists(tempfilepath)
-  f6 = fitswvar_lack_global(datar = datar,group = datagroup,datate = datate1,coulist = coulist,best = weight,gd = TRUE)
+  f6 = fitswvar_lack_global(datar = datar,group = datagroup,datate = datate1,coulist = coulist)
   write.csv(t(f6$best),file =tempfilepath)
   
+  f6$mae
   ####################################################
   
   

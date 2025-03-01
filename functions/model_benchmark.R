@@ -1059,7 +1059,7 @@ fitVAR <- function(data, p = 1, require_diff = FALSE, penalty = "ENET", method =
   #transformation
   if (length(dim(data)) >=2 & require_diff) {
     gg = as.matrix(data[,,1])
-    for (i in 2:gloi) {
+    for (i in 2:(dim(data)[3])) {
       gg = rbind(gg,data[,,i]) 
     }
     dim(gg)

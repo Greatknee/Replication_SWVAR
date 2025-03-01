@@ -1,9 +1,8 @@
 
-func_table_07_robust_g1_5 <- function(data){
+func_table_07_robust_g1_5 <- function(data, star=FALSE){
   #general forecasting
   set.seed(123)
   #datapre
-  #data <- datapre_robust(group = 1,setting = '1',gender = 'male')
   set = data$setting
   datagroup = data$group
   coulist = data$coulist
@@ -68,25 +67,22 @@ func_table_07_robust_g1_5 <- function(data){
   fdm = fitfdm(coulist = coulist, fore = TRUE, year = c(data$ystr,data$yetr,data$yste,data$yete),age = 5,gen = gen_fdm)
   fdm$summary$mafe
   fdm$summary$rmsfe
+
   #STAR stack first,model1,2
-  # if (datagroup == 3) {
-  #   VAR_1 = fitstar(datar = datar,'stack',fore = TRUE,datate = datate,lambda = 0.1,kappa = 0.01)
-  # }else{
-  #   VAR_1 = fitstar_rev(datar = datar,'stack',fore = TRUE,datate = datate,lambda = 1)
-  # }
-  kappalist = c(0,0,2,0,0)
-  VAR_1 = fitstar_rev(datar = datar,'stack',fore = TRUE,datate = datate,lambda = 1,kappa = kappalist[datagroup])
-  
-  VAR_1$rmsfe
+  if (star) {
+    kappalist = c(0,0,2,0,0.01)
+    VAR_1 = fitstar(datar = datatr1,'stack',fore = TRUE,datate = datate1,lambda = 1,kappa = kappalist[data$group])
+  }else{
+    VAR_1 = list()
+    VAR_1$rmsfe = 0
+    VAR_1$mafe = 0
+  } 
   ##########################################################################
   #fit model1
   #model34 AR+Lasso
   VAR_4 = fitVAR(ddatamat_c,p=1)#0.0000119 360 1000
   f4=forecast_nod(VAR_4,ddatamat_c[nrow(ddatamat_c),],datamat_c[nrow(datamat_c),],datamat_te)
   #################################################
-  #VAR5 fit every pop
-  #f5 = fitsvar_sep(datar,datate)
-  #our method
   #Model6
   # add age weighted model
   # weight age only need to multiply before the X

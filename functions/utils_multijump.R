@@ -124,7 +124,7 @@ le_ez <- function(mortdata,single = FALSE){
     q = a
     q[1] = m[1]/(1+(1-a[1])*m[1])
     q[2] = 4*m[2]/(1+(4-a[2])*m[2])
-    for (i in 3:glok) {
+    for (i in 3:21) {
       q[i] = 5*m[i]/(1+(5-a[i])*m[i])
     }
     return(q)

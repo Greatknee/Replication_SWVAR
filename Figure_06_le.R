@@ -13,9 +13,8 @@ library(tsibble)
 library(dplyr)
 library(CVXR)
 library(patchwork)
+library(feasts)
 
-#Set the directory
-setwd("C://Users//greatknee//Desktop//Mortality//Reproducibility//Replication_SWVAR")
 
 # Source functions
 source("functions/utils.R")

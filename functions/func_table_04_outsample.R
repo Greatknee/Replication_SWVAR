@@ -1,9 +1,3 @@
-#general forecasting
-#easy mode
-#prediction
-#14 low mortality pop
-
-
 #################
 func_table_04_outsample <- function(data){
   set.seed(123)

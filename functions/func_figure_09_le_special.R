@@ -1,9 +1,8 @@
-##############################
-
 
 ############
 #LE
 func_figure_09_le_special <- function(){
+  set.seed(123)
   data <- datapre_out(group = 3)
   tstep = 50
   datagroup = data$group
@@ -21,24 +20,6 @@ func_figure_09_le_special <- function(){
   glok = data$glok
   gloi = data$gloi
   datar = data$datatr
-  gg = as.matrix(datar[,,1])
-  for (i in 2:gloi) {
-    gg = rbind(gg,datar[,,i]) 
-  }
-  dim(gg)
-  datamat_c = t(gg)
-  e0_true = le_ez(exp(dataall[,,5]),single = TRUE)
-  
-  #prepare forecast matrix
-  ggg = as.matrix(datate[,,1])
-  for (i in 2:gloi) {
-    ggg = rbind(ggg,datate[,,i]) 
-  }
-  dim(ggg)
-  datamat_te = t(ggg)
-  ddatamat_c = diff(datamat_c)
-  ddatamat_te = diff(datamat_te)
-  
   le_ez <- function(mortdata,single = FALSE){
     #UDD
     computea0 <- function(x){
@@ -54,7 +35,7 @@ func_figure_09_le_special <- function(){
       q = a
       q[1] = m[1]/(1+(1-a[1])*m[1])
       q[2] = 4*m[2]/(1+(4-a[2])*m[2])
-      for (i in 3:glok) {
+      for (i in 3:21) {
         q[i] = 5*m[i]/(1+(5-a[i])*m[i])
       }
       return(q)
@@ -105,6 +86,25 @@ func_figure_09_le_special <- function(){
     return(e0)
   }
   
+  gg = as.matrix(datar[,,1])
+  for (i in 2:gloi) {
+    gg = rbind(gg,datar[,,i]) 
+  }
+  dim(gg)
+  datamat_c = t(gg)
+  e0_true = le_ez(exp(dataall[,,5]),single = TRUE)
+  
+  #prepare forecast matrix
+  ggg = as.matrix(datate[,,1])
+  for (i in 2:gloi) {
+    ggg = rbind(ggg,datate[,,i]) 
+  }
+  dim(ggg)
+  datamat_te = t(ggg)
+  ddatamat_c = diff(datamat_c)
+  ddatamat_te = diff(datamat_te)
+  
+
   
   ###############################
   #Lee-Carter
@@ -316,32 +316,7 @@ func_figure_09_le_special <- function(){
   le_star_lva = le_ez(exp(lmstar[,,3]),single = TRUE)
   
   ##########################################################
-  #VAR
-  pureforecast <- function(model,x0,step) {
-    #dim(ddatamat_c) = 49,294
-    nc = length(ddatamat_c[nrow(ddatamat_c),])
-    nr = step
-    m = c(model$mu)
-    pred = matrix(0,ncol=nc,nrow=nr)
-    pred[1,] = t(model$A[[1]] %*% (x0-m)) +m
-    for (i in 2:nr) {
-      pred[i,] = t(model$A[[1]] %*% (pred[(i-1),]-m)) +m
-    }
-    sum = list()
-    sum$forecast = pred
-    return(sum)
-  }
-  VAR_4 = fitVAR(datar,require_diff = TRUE,p=1)#0.0000119 360 1000
-  dlm50 = pureforecast(VAR_4,ddatamat_c[nrow(ddatamat_c),],50)
-  lm50 = apply(dlm50$forecast,2,cumsum)+matrix(rep(datamat_c[nrow(datamat_c),],tstep),nrow = tstep,byrow = TRUE)
-  lmten = array(0,dim = c(glok,tstep,gloi))
-  for (i in 1:gloi) {
-    lmten[,,i] = t(lm50[,((1:glok)+(i-1)*glok)])
-  }
-  #le_swvar = le_ez(exp(abind(datar[,,4:5],lmten[,,4:5],along = 2)))
-  le_swvar_rus = le_ez(exp(lmten[,,5]),single = TRUE)
-  le_swvar_lva = le_ez(exp(lmten[,,3]),single = TRUE)
-  
+
   ##########################################################
   #VAR
   pureforecast_s <- function(model,x0,step) {
@@ -358,7 +333,7 @@ func_figure_09_le_special <- function(){
     sum$forecast = pred
     return(sum)
   }
-  
+  VAR_4 = fitVAR(datar,require_diff = TRUE,p=1)#0.0000119 360 1000
   dlm50_s = pureforecast_s(VAR_4,ddatamat_c[nrow(ddatamat_c),],50)
   lm50_s = apply(dlm50_s$forecast,2,cumsum)+matrix(rep(datamat_c[nrow(datamat_c),],tstep),nrow = tstep,byrow = TRUE)
   lmten_s = array(0,dim = c(glok,tstep,gloi))
@@ -375,7 +350,7 @@ func_figure_09_le_special <- function(){
   # write.csv(bestp,file ='C:/Users/greatknee/Desktop/Mortality/material_VAR/swvar_param/group2')
   # bestpp = read.csv('C:/Users/greatknee/Desktop/Mortality/material_VAR/swvar_param/group2')
   # bestppp = as.matrix(bestpp[,-1])
-  f6 = fitswvar(datar = dataall, group =datagroup,datate = datate)
+  f6 = fitswvar_lack_global(datar = dataall, group =datagroup,datate = datate,coulist = coulist)
   pureforecast_swvar <- function(coef,m,x0,step) {
     #dim(ddatamat_c) = 49,294
     nc = length(ddatamat_c[nrow(ddatamat_c),])

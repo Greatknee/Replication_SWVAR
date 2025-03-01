@@ -13,6 +13,7 @@ library(tsibble)
 library(dplyr)
 library(CVXR)
 library(patchwork)
+library(feasts)
 
 #Set the directory
 setwd("C://Users//greatknee//Desktop//Mortality//Reproducibility//Replication_SWVAR")
@@ -37,16 +38,23 @@ group = c(1,2,3,5)
 flist = list()
 for (i in 1:length(group)) {
   # Load data
-  data <- datapre_out(group = group[i])
+  data <- datapre_in(group = group[i])
   # Figure 6.a
-  f1 = func_figure_07_multijump(data)
-  flist[[i]] = f1
+  if (i == 1) {
+    f1 = func_figure_07_multijump(data)
+  }else{
+    f1 = func_figure_07_multijump(data,star = TRUE)
+  }
+  flist[[2*i-1]] = f1$p1
+  flist[[2*i]] = f1$p2
 }
 
-flist[[i]]
-pdf('output/result_figure_071.pdf', width=10, height=8)
-print(f1)
+
+pdf('output/result_figure_071.pdf', width=8, height=10)
+print(flist[[1]]+flist[[2]]+flist[[3]]+flist[[4]]+flist[[5]]+flist[[6]]+flist[[7]]+flist[[8]]+  plot_layout(ncol = 2))
 dev.off()
 
 end_time <- Sys.time()
 print(end_time - start_time)
+
+#Time difference of 33.36702  mins

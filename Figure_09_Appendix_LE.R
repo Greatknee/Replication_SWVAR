@@ -14,9 +14,7 @@ library(dplyr)
 library(CVXR)
 library(patchwork)
 library(tseries)
-
-#Set the directory
-setwd("C://Users//greatknee//Desktop//Mortality//Reproducibility//Replication_SWVAR")
+library(feasts)
 
 # Source functions
 source("functions/utils.R")
@@ -26,8 +24,15 @@ source("functions/model_SWVAR.R")
 source("functions/func_figure_09_le_special.R")
 
 
+start_time <- Sys.time()
 # Figure 9
 out = func_figure_09_le_special()
-out$p1 + out$p2
 
+pdf('output/result_figure_091.pdf', width=15, height=6)
+print(out$p1 + out$p2)
+dev.off()
 
+end_time <- Sys.time()
+print(end_time - start_time)
+
+#

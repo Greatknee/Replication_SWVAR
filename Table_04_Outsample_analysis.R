@@ -12,10 +12,8 @@ library(demography)
 library(tsibble)
 library(dplyr)
 library(CVXR)
-#Set the directory
-setwd("C://Users//greatknee//Desktop//Mortality//Reproducibility//Replication_SWVAR")
-#remove all existing variables
-rm()
+library(feasts)
+
 # Source functions
 source("functions/utils.R")
 source("functions/datapre.R")

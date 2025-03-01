@@ -1,9 +1,3 @@
-#general forecasting
-#easy mode
-#prediction
-#14 low mortality pop
-
-
 
 #################
 

@@ -367,6 +367,7 @@ fitswvar <- function(datar, datate, group, best = NULL,sg = FASLE){
 }
 
 fitswvar_lack_global <- function(datar, datate, group, best = NULL, coulist,gd = FALSE){
+  set.seed(123)
   glok = dim(datar)[1]
   glot = dim(datar)[2]
   glote = dim(datate)[2]

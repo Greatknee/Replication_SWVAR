@@ -2,8 +2,6 @@ func_table_0203_test <- function(data){
   
   set.seed(123)
   #datapre
-  # data <- datapre_in(group = 1)
-  
   datagroup = data$group
   coulist = data$coulist
   datar = data$datar
@@ -165,7 +163,7 @@ func_table_0203_test <- function(data){
   #1.JTest
   #datapre
   ghat = ddatamat_c[-1,]-loopresidual
-  
+
   VARJ = fitVAR_Jtest2(ddatamat_c[-1,],datap = ghat,p=1,lambdas_list=c(10))
   sumj = customsummary2(VARJ,glok,glot,gloi,s = sigseq)
   sumj
@@ -176,7 +174,7 @@ func_table_0203_test <- function(data){
   pvalue = 1-pchisq(2*abs(sumj$sl-sumj0$sl),1)
   chi
   pvalue
-  
+
   
   #3.C-test
   
@@ -188,10 +186,8 @@ func_table_0203_test <- function(data){
   
   
   fit = lm(formula = y~0+x1,data = data)
-  #summary(fit)
-  # summary(fit)$coefficients
-  # chi
-  # pvalue
+  sum = summary(fit)
+
   return(list(Ctest = summary(fit)$coefficients, Jtest = c(chi,pvalue)))
   
 }
